@@ -1,0 +1,2 @@
+include ':app1cipher', ':app2Location', ':app3Fused', ':app4Maps', ':app5Sensor', ':app6Wifi'
+rootProject.name = "App1_Cipher"
