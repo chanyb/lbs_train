@@ -14,6 +14,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // TODO: WIFI Manager 생성
-
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
         handler = new Handler();
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -74,22 +75,38 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         // TODO: WIFI Scan receiver 생성 / 등록
+        wifiScanReceiver = new WifiScanReceiver();
+        registerReceiver(wifiScanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
     }
 
     @Override
     protected void onPause() {
         // TODO: WIFI Scan receiver 해제
         super.onPause();
+        unregisterReceiver(wifiScanReceiver);
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void onScan(View view) {
         // TODO: WIFI Scan 시작
+        wifiManager.startScan();
     }
 
     private class WifiScanReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                Log.i("this", "returned");
+                return;
+            }
             List<ScanResult> scanResultList = wifiManager.getScanResults();
             TableLayout table = (TableLayout) findViewById(R.id.tableLayout);
             table.removeAllViews();
@@ -110,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
                 row.addView(textView);
             }
             table.addView(row);
+            Log.i("this", "table.addView");
 
             for(ScanResult scanResult : scanResultList) {
                 // create a new TableRow
@@ -140,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
                 table.addView(row);
             }
 
+            Log.i("this", "middle");
+
             if (scanResultList.size() >= 8) {
 
                 double d1 = 0;
@@ -166,6 +186,8 @@ public class MainActivity extends AppCompatActivity {
                 TextView distanceView = findViewById(R.id.textViewDistance);
                 distanceView.setText("D1: " + d1 + "  \nD2: " + d2 + " \nD3: " + d3 + " \nx:" + currentPoint.x + " y: " + currentPoint.y);
             }
+
+            Log.i("this", "end");
         }
     }
 
